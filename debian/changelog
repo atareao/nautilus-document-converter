@@ -1,0 +1,26 @@
+nautilus-document-converter (0.0.6-0extras15.10.0) wily; urgency=low
+
+  * Added threads
+  * wait a second for OpenOffice/LibreOffice converter
+
+ -- Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>  Fri, 05 Feb 2016 20:58:13 +0100
+
+nautilus-document-converter (0.0.4-0extras13.10.1) saucy; urgency=low
+
+  * Fixed progress dialog behavior
+  * Changed dependencies
+
+ -- Lorenzo <atareao_s@saucy>  Wed, 20 Nov 2013 10:02:32 +0100
+
+nautilus-document-converter (0.0.3-0extras13.10.1) saucy; urgency=low
+
+  * Added dialog to stop conversion
+
+ -- Lorenzo <atareao_s@saucy>  Sun, 03 Nov 2013 20:50:52 +0100
+
+nautilus-document-converter (0.0.2-0extras13.10.1) saucy; urgency=low
+
+  * Added concurrence
+  * Added icon
+
+ -- Lorenzo <atareao_s@saucy>  Sun, 03 Nov 2013 12:15:56 +0100
