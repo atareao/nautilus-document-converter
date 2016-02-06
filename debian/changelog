@@ -1,9 +1,9 @@
-nautilus-document-converter (0.0.6-0extras15.10.0) wily; urgency=low
+nautilus-document-converter (0.0.6-0extras15.10.1) wily; urgency=low
 
   * Added threads
   * wait a second for OpenOffice/LibreOffice converter
 
- -- Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>  Fri, 05 Feb 2016 20:58:13 +0100
+ -- Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>  Sat, 06 Feb 2016 08:19:28 +0100
 
 nautilus-document-converter (0.0.4-0extras13.10.1) saucy; urgency=low
 
