@@ -219,7 +219,7 @@ class Progreso(Gtk.Dialog):
 def get_files(files_in):
     files = []
     for file_in in files_in:
-        file_in = urllib.unquote(file_in.get_uri()[7:])
+        file_in = unquote_plus(file_in.get_uri()[7:])
         fileName, fileExtension = os.path.splitext(file_in)
         if fileExtension.lower() in EXTENSIONS and os.path.isfile(file_in):
             files.append(file_in)
