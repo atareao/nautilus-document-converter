@@ -228,7 +228,7 @@ def get_files(files_in):
 ########################################################################
 
 
-class DocumentConverterMenuProvider(GObject.GObject, Nautilus.MenuProvider):
+class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
     """
     Implements the 'Replace in Filenames' extension to the nautilus
     right-click menu
@@ -236,7 +236,8 @@ class DocumentConverterMenuProvider(GObject.GObject, Nautilus.MenuProvider):
 
     def __init__(self):
         """
-        Nautilus crashes if a plugin doesn't implement the __init__ method
+        The FileManager crashes if a plugin doesn't implement the __init__
+        method
         """
         pass
 
@@ -295,23 +296,23 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
     def get_file_items(self, window, sel_items):
         """
-        Adds the 'Replace in Filenames' menu item to the Nautilus
+        Adds the 'Replace in Filenames' menu item to the FileManager
         right-click menu, connects its 'activate' signal to the 'run' method
         passing the selected Directory/File
         """
         if not self.all_files_are_document(sel_items):
             return
-        top_menuitem = Nautilus.MenuItem(
+        top_menuitem = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter',
             label=_('Document converter'),
             tip=_('Tools to convert documents'),
             icon='Gtk-find-and-replace')
         #
-        submenu = Nautilus.Menu()
+        submenu = FileManager.Menu()
         top_menuitem.set_submenu(submenu)
         sub_menus = []
         #
-        sub_menuitem_doc = Nautilus.MenuItem(
+        sub_menuitem_doc = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-doc',
             label=_('to DOC'),
             tip=_('Convert to DOC'),
@@ -322,7 +323,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_doc)
         #
-        sub_menuitem_docx = Nautilus.MenuItem(
+        sub_menuitem_docx = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-docx',
             label=_('to DOCX'),
             tip=_('Convert to DOCX'),
@@ -333,7 +334,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                   sel_items)
         submenu.append_item(sub_menuitem_docx)
         #
-        sub_menuitem_html = Nautilus.MenuItem(
+        sub_menuitem_html = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-html',
             label=_('to HTML'),
             tip=_('Convert to HTML'),
@@ -344,7 +345,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                   sel_items)
         submenu.append_item(sub_menuitem_html)
         #
-        sub_menuitem_odp = Nautilus.MenuItem(
+        sub_menuitem_odp = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-odp',
             label=_('to ODP'),
             tip=_('Convert to ODP'),
@@ -355,7 +356,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_odp)
         #
-        sub_menuitem_ods = Nautilus.MenuItem(
+        sub_menuitem_ods = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-ods',
             label=_('to ODS'),
             tip=_('Convert to ODS'),
@@ -366,7 +367,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_ods)
         #
-        sub_menuitem_odt = Nautilus.MenuItem(
+        sub_menuitem_odt = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-odt',
             label=_('to ODT'),
             tip=_('Convert to ODT'),
@@ -377,7 +378,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_odt)
         #
-        sub_menuitem_jpg = Nautilus.MenuItem(
+        sub_menuitem_jpg = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-jpg',
             label=_('to JPG'),
             tip=_('Convert to JPG'),
@@ -388,7 +389,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_jpg)
         #
-        sub_menuitem_pdf = Nautilus.MenuItem(
+        sub_menuitem_pdf = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-pdf',
             label=_('to PDF'),
             tip=_('Convert to PDF'),
@@ -399,7 +400,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_pdf)
         #
-        sub_menuitem_png = Nautilus.MenuItem(
+        sub_menuitem_png = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-png',
             label=_('to PNG'),
             tip=_('Convert to PNG'),
@@ -410,7 +411,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_png)
         #
-        sub_menuitem_ppt = Nautilus.MenuItem(
+        sub_menuitem_ppt = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-ppt',
             label=_('to PPT'),
             tip=_('Convert to PPT'),
@@ -421,7 +422,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_ppt)
         #
-        sub_menuitem_pptx = Nautilus.MenuItem(
+        sub_menuitem_pptx = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-pptx',
             label=_('to PPTX'),
             tip=_('Convert to PPTX'),
@@ -432,7 +433,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                   sel_items)
         submenu.append_item(sub_menuitem_pptx)
         #
-        sub_menuitem_rtf = Nautilus.MenuItem(
+        sub_menuitem_rtf = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-rtf',
             label=_('to RTF'),
             tip=_('Convert to RTF'),
@@ -443,7 +444,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_rtf)
         #
-        sub_menuitem_svg = Nautilus.MenuItem(
+        sub_menuitem_svg = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-svg',
             label=_('to SVG'),
             tip=_('Convert to SVG'),
@@ -454,7 +455,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_svg)
         #
-        sub_menuitem_swf = Nautilus.MenuItem(
+        sub_menuitem_swf = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-swf',
             label=_('to SWF'),
             tip=_('Convert to SWF'),
@@ -465,7 +466,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_swf)
         #
-        sub_menuitem_txt = Nautilus.MenuItem(
+        sub_menuitem_txt = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-txt',
             label=_('to TXT'),
             tip=_('Convert to TXT'),
@@ -476,7 +477,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                  sel_items)
         submenu.append_item(sub_menuitem_txt)
         #
-        sub_menuitem_10 = Nautilus.MenuItem(
+        sub_menuitem_10 = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-10',
             label=_('to XLS'),
             tip=_('Convert to XLS'),
@@ -487,7 +488,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                 sel_items)
         submenu.append_item(sub_menuitem_10)
         #
-        sub_menuitem_11 = Nautilus.MenuItem(
+        sub_menuitem_11 = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-11',
             label=_('to XLSX'),
             tip=_('Convert to XLSX'),
@@ -498,11 +499,11 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
                                 sel_items)
         submenu.append_item(sub_menuitem_11)
         #
-        sub_menuitem_98 = Nautilus.MenuItem(
+        sub_menuitem_98 = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-none', label='')
         submenu.append_item(sub_menuitem_98)
         #
-        sub_menuitem_99 = Nautilus.MenuItem(
+        sub_menuitem_99 = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-99',
             label=_('About'),
             tip=_('About'),
