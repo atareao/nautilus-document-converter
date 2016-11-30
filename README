@@ -1,0 +1,18 @@
+nautilus-document-converter
+===========================
+
+nautilus-document-converter
+
+Download
+--------
+
+Download the [package][dlp] *or* checkout the source:
+
+    $ git clone https://github.com/atareao/nautilus-document-converter.git
+
+Installation
+------------
+
+    $ sudo add-apt-repositoy ppa:atareao/nautilus-extensions
+    $ sudo apt-get update
+    $ sudo apt-get install nautilus-document-converter
