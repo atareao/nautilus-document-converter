@@ -278,7 +278,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         ad.run()
         ad.destroy()
 
-    def convert(self, menu, extension, selected):
+    def convert_to_extension(self, menu, extension, selected):
         files = get_files(selected)
         diib = DoItInBackground(files, extension)
         progreso = Progreso(_('Convert to %s' % (extension)), None, len(files))
@@ -289,10 +289,6 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         progreso.connect('i-want-stop', diib.stop)
         diib.start()
         progreso.run()
-
-    def convert_to_extension(self, menu, extension, selected):
-        files = get_files(selected)
-        convert_files(files, extension)
 
     def get_file_items(self, window, sel_items):
         """
