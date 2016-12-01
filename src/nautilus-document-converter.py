@@ -110,10 +110,10 @@ class DoItInBackground(IdleObject, Thread):
 
     def convert_file(self, file_in):
         file_out = self.get_output_filename(file_in)
-        runtime = 'unoconv -f %s -o %s %s' % (self.extension,
-                                              file_out,
-                                              file_in)
-        args = shlex.split(rutine)
+        runtime = 'unoconv -f %s -o "%s" "%s"' % (self.extension,
+                                                  file_out,
+                                                  file_in)
+        args = shlex.split(runtime)
         self.process = subprocess.Popen(args, stdout=subprocess.PIPE)
         out, err = self.process.communicate()
         print(out, err)
@@ -133,6 +133,7 @@ class DoItInBackground(IdleObject, Thread):
                 self.convert_file(afile)
                 self.emit('end_one', os.path.getsize(afile))
         except Exception as e:
+            print(e)
             self.ok = False
         try:
             if self.process is not None:
@@ -513,8 +514,6 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         import glob
         files = glob.glob('*.pdf')
-        print(files)
-        print(os.getcwd())
         tmpfiles = []
         for afile in files:
             tmpfiles.append(os.path.join(os.getcwd(), afile))
