@@ -39,25 +39,11 @@ from gi.repository import GLib
 from gi.repository import Nautilus as FileManager
 import re
 
+APPNAME = 'nautilus-document-converter'
+ICON = 'nautilus-document-converter'
+VERSION = '$VERSION$'
 
-LANGDIR = '/usr/share/locale-langpack'
-APP = 'nautilus-document-converter'
-VERSION = '0.0.6-0extras15.10.0'
-
-try:
-    current_locale, encoding = locale.getdefaultlocale()
-    language = gettext.translation(
-        'nautilus-document-converter',
-        '/usr/share/locale-langpack',
-        [current_locale])
-    language.install()
-    if sys.version_info[0] == 3:
-        _ = language.gettext
-    else:
-        _ = language.ugettext
-except Exception as e:
-    print(e)
-    _ = str
+_ = str
 
 EXTENSIONS = ['.bib', '.dbf', '.dif', '.doc', '.dxf', '.emf', '.eps', '.gif',
               '.html', '.jpg', '.ltx', '.met', '.odg', '.odp', '.ods', '.odt',
@@ -101,6 +87,8 @@ class DoItInBackground(IdleObject, Thread):
 
     def stop(self, *args):
         self.stopit = True
+        if self.process is not None:
+            self.process.terminate()
 
     def get_output_filename(self, file_in):
         head, tail = os.path.split(file_in)
@@ -124,7 +112,6 @@ class DoItInBackground(IdleObject, Thread):
             total += os.path.getsize(afile)
         self.emit('started', total)
         try:
-            total = 0
             for afile in self.files:
                 if self.stopit is True:
                     self.ok = False
@@ -249,40 +236,11 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
                 return True
         return False
 
-    def about(self, menu, selected):
-        ad = Gtk.AboutDialog()
-        ad.set_name('Nautilus Document Converter')
-        ad.set_icon_name('nautilus_document_converter')
-        ad.set_version(VERSION)
-        ad.set_copyright('Copyrignt (c) 2013-2016\nLorenzo Carbonell')
-        ad.set_comments(_('Tools to convert document files'))
-        ad.set_license('''
-This program is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation, either version 3 of the License, or (at your option
-any later version.
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-more details.
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>.
-''')
-        ad.set_website('http://www.atareao.es')
-        ad.set_website_label('http://www.atareao.es')
-        ad.set_authors([
-            'Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>'])
-        ad.set_documenters([
-            'Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>'])
-        ad.set_program_name('Nautilus Document Converter')
-        ad.set_logo_icon_name('nautilus_document_converter')
-        ad.run()
-        ad.destroy()
-
-    def convert_to_extension(self, menu, extension, selected):
+    def convert_to_extension(self, menu, extension, selected, window):
         files = get_files(selected)
         diib = DoItInBackground(files, extension)
-        progreso = Progreso(_('Convert to %s' % (extension)), None, len(files))
+        progreso = Progreso(_('Convert to %s' % (extension)), window,
+                            len(files))
         diib.connect('started', progreso.set_max_value)
         diib.connect('start_one', progreso.set_element)
         diib.connect('end_one', progreso.increase)
@@ -317,7 +275,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_doc.connect('activate',
                                  self.convert_to_extension,
                                  'doc',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_doc)
         #
         sub_menuitem_docx = FileManager.MenuItem(
@@ -328,7 +287,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_docx.connect('activate',
                                   self.convert_to_extension,
                                   'docx',
-                                  sel_items)
+                                  sel_items,
+                                  window)
         submenu.append_item(sub_menuitem_docx)
         #
         sub_menuitem_html = FileManager.MenuItem(
@@ -339,7 +299,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_html.connect('activate',
                                   self.convert_to_extension,
                                   'html',
-                                  sel_items)
+                                  sel_items,
+                                  window)
         submenu.append_item(sub_menuitem_html)
         #
         sub_menuitem_odp = FileManager.MenuItem(
@@ -350,7 +311,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_odp.connect('activate',
                                  self.convert_to_extension,
                                  'odp',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_odp)
         #
         sub_menuitem_ods = FileManager.MenuItem(
@@ -361,7 +323,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_ods.connect('activate',
                                  self.convert_to_extension,
                                  'ods',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_ods)
         #
         sub_menuitem_odt = FileManager.MenuItem(
@@ -372,7 +335,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_odt.connect('activate',
                                  self.convert_to_extension,
                                  'odt',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_odt)
         #
         sub_menuitem_jpg = FileManager.MenuItem(
@@ -383,7 +347,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_jpg.connect('activate',
                                  self.convert_to_extension,
                                  'jpg',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_jpg)
         #
         sub_menuitem_pdf = FileManager.MenuItem(
@@ -394,7 +359,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_pdf.connect('activate',
                                  self.convert_to_extension,
                                  'pdf',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_pdf)
         #
         sub_menuitem_png = FileManager.MenuItem(
@@ -405,7 +371,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_png.connect('activate',
                                  self.convert_to_extension,
                                  'png',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_png)
         #
         sub_menuitem_ppt = FileManager.MenuItem(
@@ -416,7 +383,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_ppt.connect('activate',
                                  self.convert_to_extension,
                                  'ppt',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_ppt)
         #
         sub_menuitem_pptx = FileManager.MenuItem(
@@ -427,7 +395,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_pptx.connect('activate',
                                   self.convert_to_extension,
                                   'pptx',
-                                  sel_items)
+                                  sel_items,
+                                  window)
         submenu.append_item(sub_menuitem_pptx)
         #
         sub_menuitem_rtf = FileManager.MenuItem(
@@ -438,7 +407,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_rtf.connect('activate',
                                  self.convert_to_extension,
                                  'rtf',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_rtf)
         #
         sub_menuitem_svg = FileManager.MenuItem(
@@ -449,7 +419,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_svg.connect('activate',
                                  self.convert_to_extension,
                                  'svg',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_svg)
         #
         sub_menuitem_swf = FileManager.MenuItem(
@@ -460,7 +431,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_swf.connect('activate',
                                  self.convert_to_extension,
                                  'swf',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_swf)
         #
         sub_menuitem_txt = FileManager.MenuItem(
@@ -471,7 +443,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_txt.connect('activate',
                                  self.convert_to_extension,
                                  'txt',
-                                 sel_items)
+                                 sel_items,
+                                 window)
         submenu.append_item(sub_menuitem_txt)
         #
         sub_menuitem_10 = FileManager.MenuItem(
@@ -482,7 +455,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_10.connect('activate',
                                 self.convert_to_extension,
                                 'xls',
-                                sel_items)
+                                sel_items,
+                                window)
         submenu.append_item(sub_menuitem_10)
         #
         sub_menuitem_11 = FileManager.MenuItem(
@@ -493,7 +467,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         sub_menuitem_11.connect('activate',
                                 self.convert_to_extension,
                                 'xlsx',
-                                sel_items)
+                                sel_items,
+                                window)
         submenu.append_item(sub_menuitem_11)
         #
         sub_menuitem_98 = FileManager.MenuItem(
@@ -505,10 +480,40 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
             label=_('About'),
             tip=_('About'),
             icon='Gtk-find-and-replace')
-        sub_menuitem_99.connect('activate', self.about, sel_items)
+        sub_menuitem_99.connect('activate', self.about, window)
         submenu.append_item(sub_menuitem_99)
         #
         return top_menuitem,
+
+    def about(self, widget, window):
+        ad = Gtk.AboutDialog(parent=window)
+        ad.set_name(APPNAME)
+        ad.set_version(VERSION)
+        ad.set_copyright('Copyrignt (c) 2016\nLorenzo Carbonell')
+        ad.set_comments(APPNAME)
+        ad.set_license('''
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <http://www.gnu.org/licenses/>.
+''')
+        ad.set_website('http://www.atareao.es')
+        ad.set_website_label('http://www.atareao.es')
+        ad.set_authors([
+            'Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>'])
+        ad.set_documenters([
+            'Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>'])
+        ad.set_icon_name(ICON)
+        ad.set_logo_icon_name(APPNAME)
+        ad.run()
+        ad.destroy()
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
