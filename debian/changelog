@@ -1,9 +1,9 @@
-nautilus-document-converter (0.1.0-0extras16.04.0) xenail; urgency=medium
+nautilus-document-converter (0.1.0-0extras16.04.1) xenial; urgency=medium
 
   * Updated icon
   * Formatted
 
- -- Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>  Sun, 18 Dec 2016 14:13:17 +0100
+ -- Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>  Sun, 18 Dec 2016 18:23:48 +0100
 
 nautilus-document-converter (0.0.8-0extras16.04.0) xenial; urgency=medium
 
