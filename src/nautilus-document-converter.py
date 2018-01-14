@@ -29,15 +29,12 @@ except Exception as e:
 import os
 import subprocess
 import shlex
-import tempfile
-import shutil
 from threading import Thread
 from urllib import unquote_plus
 from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import Nautilus as FileManager
-import re
 
 APPNAME = 'nautilus-document-converter'
 ICON = 'nautilus-document-converter'
@@ -195,7 +192,7 @@ class Progreso(Gtk.Dialog):
 
     def increase(self, anobject, value):
         self.value += float(value)
-        fraction = self.value/self.max_value
+        fraction = self.value / self.max_value
         self.progressbar.set_fraction(fraction)
         if self.value >= self.max_value:
             self.hide()
@@ -265,7 +262,6 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
         #
         submenu = FileManager.Menu()
         top_menuitem.set_submenu(submenu)
-        sub_menus = []
         #
         sub_menuitem_doc = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter-doc',
@@ -489,7 +485,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
         ad = Gtk.AboutDialog(parent=window)
         ad.set_name(APPNAME)
         ad.set_version(VERSION)
-        ad.set_copyright('Copyrignt (c) 2016\nLorenzo Carbonell')
+        ad.set_copyright('Copyrignt (c) 2016 - 2018\nLorenzo Carbonell')
         ad.set_comments(APPNAME)
         ad.set_license('''
 This program is free software: you can redistribute it and/or modify it under
@@ -514,15 +510,3 @@ this program. If not, see <http://www.gnu.org/licenses/>.
         ad.set_logo_icon_name(APPNAME)
         ad.run()
         ad.destroy()
-
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        import glob
-        files = glob.glob('*.pdf')
-        tmpfiles = []
-        for afile in files:
-            tmpfiles.append(os.path.join(os.getcwd(), afile))
-        convert_files(tmpfiles, 'odt')
-    else:
-        convert_files(sys.argv[1:], 'pdf')
-    exit(0)
