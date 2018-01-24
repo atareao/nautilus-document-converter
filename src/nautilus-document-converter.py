@@ -42,14 +42,15 @@ VERSION = '$VERSION$'
 
 _ = str
 
-EXTENSIONS = ['.bib', '.dbf', '.dif', '.doc', '.dxf', '.emf', '.eps', '.gif',
-              '.html', '.jpg', '.ltx', '.met', '.odg', '.odp', '.ods', '.odt',
-              '.otg', '.ott', '.pbm', '.pbm', '.pct', '.pdb', '.pdf', '.pgm',
-              '.png', '.pot', '.ppm', '.ppt', '.psw', '.pts', '.pwp', '.pxl',
-              '.ras', '.rtf', '.sda', '.sdc', '.sdd', '.sdw', '.slk', '.stc',
-              '.std', '.sti', '.stp', '.stw', '.svg', '.svm', '.svm', '.swf',
-              '.sxc', '.sxd', '.sxi', '.sxw', '.tiff', '.txt', '.vor', '.wmf',
-              '.xhtml', '.xls', '.xlt', '.xml', '.xpm']
+EXTENSIONS = ['.bib', '.dbf', '.dif', '.doc', '.docx', '.dxf', '.emf', '.eps',
+              '.gif', '.html', '.jpg', '.ltx', '.met', '.odg', '.odp', '.ods',
+              '.odt', '.otg', '.ott', '.pbm', '.pbm', '.pct', '.pdb', '.pdf',
+              '.pgm', '.png', '.pot', '.ppm', '.ppt', '.pptx', '.psw', '.pts',
+              '.pwp', '.pxl', '.ras', '.rtf', '.sda', '.sdc', '.sdd', '.sdw',
+              '.slk', '.stc', '.std', '.sti', '.stp', '.stw', '.svg', '.svm',
+              '.svm', '.swf', '.sxc', '.sxd', '.sxi', '.sxw', '.tiff', '.txt',
+              '.vor', '.wmf', '.xhtml', '.xls', '.xlsx', '.xlt', '.xml',
+              '.xpm']
 
 
 class IdleObject(GObject.GObject):
