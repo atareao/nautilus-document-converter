@@ -1,2 +1,2 @@
-src/nautilus-document-converter.py /usr/share/nautilus-python/extensions
-data/nautilus-document-converter.svg /usr/share/icons/gnome/scalable/apps
+src/*.py /usr/share/nautilus-python/extensions
+data/icons/* /usr/share/icons/hicolor

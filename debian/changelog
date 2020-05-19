@@ -1,3 +1,10 @@
+nautilus-document-converter (0.1.2-0extras20.04.3) focal; urgency=medium
+
+  * Change to Python3
+  * Plumbum
+
+ -- Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>  Tue, 19 May 2020 07:14:18 +0200
+
 nautilus-document-converter (0.1.1-0extras16.04.0) xenial; urgency=medium
 
   * Added extensions .docx, .xlsx, .pptx

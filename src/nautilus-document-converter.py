@@ -1,46 +1,59 @@
-##!/usr/bin/python
+##!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # This file is part of nautilus-document-converter
 #
-# Copyright (C) 2013-2016 Lorenzo Carbonell
-# lorenzo.carbonell.cerezo@gmail.com
+# Copyright (c) 2016 Lorenzo Carbonell Cerezo <a.k.a. atareao>
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 import gi
 try:
     gi.require_version('Gtk', '3.0')
+    gi.require_version('Gdk', '3.0')
+    gi.require_version('GLib', '2.0')
+    gi.require_version('GObject', '2.0')
     gi.require_version('Nautilus', '3.0')
 except Exception as e:
     print(e)
     exit(-1)
-import os
-import subprocess
-import shlex
-from threading import Thread
-from urllib import unquote_plus
-from gi.repository import GObject
 from gi.repository import Gtk
+from gi.repository import Gdk
 from gi.repository import GLib
+from gi.repository import GObject
 from gi.repository import Nautilus as FileManager
+import os
+import locale
+import gettext
+from plumbum import local
+from concurrent import futures
 
-APPNAME = 'nautilus-document-converter'
-ICON = 'nautilus-document-converter'
+APP = '$APP'
+ICON = '$APP'
 VERSION = '$VERSION$'
+LANGDIR = os.path.join('usr', 'share', 'locale-langpack')
 
-_ = str
+current_locale, encoding = locale.getdefaultlocale()
+language = gettext.translation(APP, LANGDIR, [current_locale])
+language.install()
+_ = language.gettext
+
 
 EXTENSIONS = ['.bib', '.dbf', '.dif', '.doc', '.docx', '.dxf', '.emf', '.eps',
               '.gif', '.html', '.jpg', '.ltx', '.met', '.odg', '.odp', '.ods',
@@ -53,133 +66,67 @@ EXTENSIONS = ['.bib', '.dbf', '.dif', '.doc', '.docx', '.dxf', '.emf', '.eps',
               '.xpm']
 
 
-class IdleObject(GObject.GObject):
-    """
-    Override GObject.GObject to always emit signals in the main thread
-    by emmitting on an idle handler
-    """
-    def __init__(self):
-        GObject.GObject.__init__(self)
-
-    def emit(self, *args):
-        GLib.idle_add(GObject.GObject.emit, self, *args)
-
-
-class DoItInBackground(IdleObject, Thread):
-    __gsignals__ = {
-        'started': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (int,)),
-        'ended': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (bool,)),
-        'start_one': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (str,)),
-        'end_one': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (float,)),
-    }
-
-    def __init__(self, files, extension):
-        IdleObject.__init__(self)
-        Thread.__init__(self)
-        self.files = files
-        self.extension = extension
-        self.stopit = False
-        self.ok = True
-        self.daemon = True
-        self.process = None
-
-    def stop(self, *args):
-        self.stopit = True
-        if self.process is not None:
-            self.process.terminate()
-
-    def get_output_filename(self, file_in):
-        head, tail = os.path.split(file_in)
-        root, ext = os.path.splitext(tail)
-        file_out = os.path.join(head, root + '.' + self.extension)
-        return file_out
-
-    def convert_file(self, file_in):
-        file_out = self.get_output_filename(file_in)
-        runtime = 'unoconv -f %s -o "%s" "%s"' % (self.extension,
-                                                  file_out,
-                                                  file_in)
-        args = shlex.split(runtime)
-        self.process = subprocess.Popen(args, stdout=subprocess.PIPE)
-        out, err = self.process.communicate()
-        print(out, err)
-
-    def run(self):
-        total = 0
-        for afile in self.files:
-            total += os.path.getsize(afile)
-        self.emit('started', total)
-        try:
-            for afile in self.files:
-                if self.stopit is True:
-                    self.ok = False
-                    break
-                self.emit('start_one', afile)
-                self.convert_file(afile)
-                self.emit('end_one', os.path.getsize(afile))
-        except Exception as e:
-            print(e)
-            self.ok = False
-        try:
-            if self.process is not None:
-                self.process.terminate()
-                self.process = None
-        except Exception as e:
-            print(e)
-        self.emit('ended', self.ok)
-
-
 class Progreso(Gtk.Dialog):
     __gsignals__ = {
         'i-want-stop': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, ()),
     }
 
-    def __init__(self, title, parent, max_value):
+    def __init__(self, title, parent):
         Gtk.Dialog.__init__(self, title, parent)
-        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
-        self.set_size_request(330, 30)
-        self.set_resizable(False)
-        self.connect('destroy', self.close)
         self.set_modal(True)
-        vbox = Gtk.VBox(spacing=5)
+        self.set_destroy_with_parent(True)
+        self.set_resizable(False)
+        self.set_icon_name(ICON)
+        self.set_size_request(330, 30)
+        self.connect('destroy', self.close)
+        self.connect('realize', self.on_realize)
+        self.init_ui()
+        self.stop = False
+        self.show_all()
+        self.value = 0.0
+
+    def init_ui(self):
+        vbox = Gtk.Box(Gtk.Orientation.VERTICAL, 5)
         vbox.set_border_width(5)
         self.get_content_area().add(vbox)
-        #
+
         frame1 = Gtk.Frame()
-        vbox.pack_start(frame1, True, True, 0)
-        table = Gtk.Table(2, 2, False)
-        frame1.add(table)
-        #
+        vbox.add(frame1)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(10)
+        grid.set_column_spacing(10)
+        grid.set_margin_bottom(10)
+        grid.set_margin_start(10)
+        grid.set_margin_end(10)
+        grid.set_margin_top(10)
+        frame1.add(grid)
+
         self.label = Gtk.Label()
-        table.attach(self.label, 0, 2, 0, 1,
-                     xpadding=5,
-                     ypadding=5,
-                     xoptions=Gtk.AttachOptions.SHRINK,
-                     yoptions=Gtk.AttachOptions.EXPAND)
-        #
+        grid.attach(self.label, 0, 0, 2, 1)
+
         self.progressbar = Gtk.ProgressBar()
         self.progressbar.set_size_request(300, 0)
-        table.attach(self.progressbar, 0, 1, 1, 2,
-                     xpadding=5,
-                     ypadding=5,
-                     xoptions=Gtk.AttachOptions.SHRINK,
-                     yoptions=Gtk.AttachOptions.EXPAND)
+        grid.attach(self.progressbar, 0, 1, 1, 1)
+
         button_stop = Gtk.Button()
         button_stop.set_size_request(40, 40)
         button_stop.set_image(
             Gtk.Image.new_from_stock(Gtk.STOCK_STOP, Gtk.IconSize.BUTTON))
         button_stop.connect('clicked', self.on_button_stop_clicked)
-        table.attach(button_stop, 1, 2, 1, 2,
-                     xpadding=5,
-                     ypadding=5,
-                     xoptions=Gtk.AttachOptions.SHRINK)
-        self.stop = False
-        self.show_all()
-        self.max_value = float(max_value)
-        self.value = 0.0
+        grid.attach(button_stop, 1, 1, 1, 1)
 
-    def set_max_value(self, anobject, max_value):
-        self.max_value = float(max_value)
+    def on_realize(self, *_):
+        monitor = Gdk.Display.get_primary_monitor(Gdk.Display.get_default())
+        scale = monitor.get_scale_factor()
+        monitor_width = monitor.get_geometry().width / scale
+        monitor_height = monitor.get_geometry().height / scale
+        width = self.get_preferred_width()[0]
+        height = self.get_preferred_height()[0]
+        self.move((monitor_width - width)/2, (monitor_height - height)/2)
+
+    def emit(self, *args):
+        GLib.idle_add(GObject.GObject.emit, self, *args)
 
     def get_stop(self):
         return self.stop
@@ -191,27 +138,100 @@ class Progreso(Gtk.Dialog):
     def close(self, *args):
         self.destroy()
 
-    def increase(self, anobject, value):
-        self.value += float(value)
-        fraction = self.value / self.max_value
-        self.progressbar.set_fraction(fraction)
-        if self.value >= self.max_value:
-            self.hide()
+    def increase(self, widget=None, x=1.0):
+        self.value += float(x)
+        if round(self.value, 5) >= 1.0:
+            GLib.idle_add(self.destroy)
+        else:
+            GLib.idle_add(self.progressbar.set_fraction, self.value)
 
-    def set_element(self, anobject, element):
-        self.label.set_text(_('Converting: %s') % element)
+    def set_element(self, widget=None, element=''):
+        GLib.idle_add(self.label.set_text, str(element))
+
+
+class DoItInBackground(GObject.GObject):
+    __gsignals__ = {
+        'started': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (int,)),
+        'ended': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (bool,)),
+        'start_one': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (str,)),
+        'end_one': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (float,)),
+    }
+
+    def __init__(self, title, parent, files, extension):
+        GObject.GObject.__init__(self)
+        self.files = files
+        self.stopit = False
+        self.ok = True
+        self.total_duration = get_total_duration(files)
+        self.extension = extension
+        self.progreso = Progreso(title, parent)
+        self.progreso.connect('i-want-stop', self.stop)
+        self.connect('start_one', self.progreso.set_element)
+        self.connect('end_one', self.progreso.increase)
+        self.connect('ended', self.progreso.close)
+        self.tasks = []
+
+    def emit(self, *args):
+        GLib.idle_add(GObject.GObject.emit, self, *args)
+
+    def stop(self, *args):
+        self.stopit = True
+
+    def run(self):
+        try:
+            executor = futures.ThreadPoolExecutor()
+            for afile in self.files:
+                if self.stopit is True:
+                    break
+                task = executor.submit(process_item, afile, self)
+                self.tasks.append({'file': afile,
+                                   'task': task})
+            if self.stopit is True:
+                for task in self.tasks:
+                    if task['task'].is_running():
+                        task['task'].cancel()
+                        self.emit(
+                            'end_one',
+                            get_duration(task['file']) / self.total_duration)
+            self.progreso.run()
+        except Exception as e:
+            self.ok = False
+            print(e)
+        self.emit('ended', self.ok)
+
+
+def get_total_duration(files):
+    total_duration = 0.0
+    for afile in files:
+        total_duration += float(os.path.getsize(afile))
+    return total_duration
+
+
+def get_duration(file_in):
+    return float(os.path.getsize(file_in))
 
 
 def get_files(files_in):
     files = []
     for file_in in files_in:
-        file_in = unquote_plus(file_in.get_uri()[7:])
-        fileName, fileExtension = os.path.splitext(file_in)
-        if fileExtension.lower() in EXTENSIONS and os.path.isfile(file_in):
-            files.append(file_in)
+        if not file_in.is_directory():
+            fileName, fileExtension = os.path.splitext(
+                    file_in.get_location().get_path())
+            if fileExtension.lower() in EXTENSIONS:
+                files.append(file_in)
     return files
 
-########################################################################
+
+def process_item(file_in, extension, diib):
+    duration = get_duration(file_in)
+    diib.emit('start_one', os.path.basename(file_in))
+    head, tail = os.path.split(file_in)
+    root, ext = os.path.splitext(tail)
+    file_out = os.path.join(head, root + '.' + diib.extension)
+    unoconv = local['unoconv']
+    unoconv['-f', 'self.extension', '-o', '"{}"'.format(file_out),
+            '"{}"'.format(file_in)]()
+    diib.emit('end_one', duration / diib.total_duration)
 
 
 class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
@@ -225,27 +245,12 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
         The FileManager crashes if a plugin doesn't implement the __init__
         method
         """
-        pass
+        GObject.GObject.__init__(self)
 
-    def all_files_are_document(self, items):
-        for item in items:
-            fileName, fileExtension = os.path.splitext(item.get_uri()[7:])
-            if fileExtension.lower() in EXTENSIONS:
-                return True
-        return False
-
-    def convert_to_extension(self, menu, extension, selected, window):
+    def process(self, menu, selected, window, extension):
         files = get_files(selected)
-        diib = DoItInBackground(files, extension)
-        progreso = Progreso(_('Convert to %s' % (extension)), window,
-                            len(files))
-        diib.connect('started', progreso.set_max_value)
-        diib.connect('start_one', progreso.set_element)
-        diib.connect('end_one', progreso.increase)
-        diib.connect('ended', progreso.close)
-        progreso.connect('i-want-stop', diib.stop)
-        diib.start()
-        progreso.run()
+        diib = DoItInBackground(_('Convert file'), window, files, extension)
+        diib.run()
 
     def get_file_items(self, window, sel_items):
         """
@@ -253,7 +258,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
         right-click menu, connects its 'activate' signal to the 'run' method
         passing the selected Directory/File
         """
-        if not self.all_files_are_document(sel_items):
+        if get_files(items) == 0:
             return
         top_menuitem = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter',
@@ -270,10 +275,10 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to DOC'),
             icon='Gtk-find-and-replace')
         sub_menuitem_doc.connect('activate',
-                                 self.convert_to_extension,
-                                 'doc',
+                                 self.process,
                                  sel_items,
-                                 window)
+                                 window,
+                                 'doc')
         submenu.append_item(sub_menuitem_doc)
         #
         sub_menuitem_docx = FileManager.MenuItem(
@@ -283,9 +288,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_docx.connect('activate',
                                   self.convert_to_extension,
-                                  'docx',
                                   sel_items,
-                                  window)
+                                  window,
+                                  'docx')
         submenu.append_item(sub_menuitem_docx)
         #
         sub_menuitem_html = FileManager.MenuItem(
@@ -295,9 +300,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_html.connect('activate',
                                   self.convert_to_extension,
-                                  'html',
                                   sel_items,
-                                  window)
+                                  window,
+                                  'html')
         submenu.append_item(sub_menuitem_html)
         #
         sub_menuitem_odp = FileManager.MenuItem(
@@ -307,9 +312,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_odp.connect('activate',
                                  self.convert_to_extension,
-                                 'odp',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'odp')
         submenu.append_item(sub_menuitem_odp)
         #
         sub_menuitem_ods = FileManager.MenuItem(
@@ -319,9 +324,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_ods.connect('activate',
                                  self.convert_to_extension,
-                                 'ods',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'ods')
         submenu.append_item(sub_menuitem_ods)
         #
         sub_menuitem_odt = FileManager.MenuItem(
@@ -331,9 +336,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_odt.connect('activate',
                                  self.convert_to_extension,
-                                 'odt',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'odt')
         submenu.append_item(sub_menuitem_odt)
         #
         sub_menuitem_jpg = FileManager.MenuItem(
@@ -343,9 +348,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_jpg.connect('activate',
                                  self.convert_to_extension,
-                                 'jpg',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'jpg')
         submenu.append_item(sub_menuitem_jpg)
         #
         sub_menuitem_pdf = FileManager.MenuItem(
@@ -355,9 +360,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_pdf.connect('activate',
                                  self.convert_to_extension,
-                                 'pdf',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'pdf')
         submenu.append_item(sub_menuitem_pdf)
         #
         sub_menuitem_png = FileManager.MenuItem(
@@ -367,9 +372,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_png.connect('activate',
                                  self.convert_to_extension,
-                                 'png',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'png')
         submenu.append_item(sub_menuitem_png)
         #
         sub_menuitem_ppt = FileManager.MenuItem(
@@ -379,9 +384,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_ppt.connect('activate',
                                  self.convert_to_extension,
-                                 'ppt',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'ppt')
         submenu.append_item(sub_menuitem_ppt)
         #
         sub_menuitem_pptx = FileManager.MenuItem(
@@ -391,9 +396,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_pptx.connect('activate',
                                   self.convert_to_extension,
-                                  'pptx',
                                   sel_items,
-                                  window)
+                                  window,
+                                  'pptx')
         submenu.append_item(sub_menuitem_pptx)
         #
         sub_menuitem_rtf = FileManager.MenuItem(
@@ -403,9 +408,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_rtf.connect('activate',
                                  self.convert_to_extension,
-                                 'rtf',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'rtf')
         submenu.append_item(sub_menuitem_rtf)
         #
         sub_menuitem_svg = FileManager.MenuItem(
@@ -415,9 +420,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_svg.connect('activate',
                                  self.convert_to_extension,
-                                 'svg',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'svg')
         submenu.append_item(sub_menuitem_svg)
         #
         sub_menuitem_swf = FileManager.MenuItem(
@@ -427,9 +432,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_swf.connect('activate',
                                  self.convert_to_extension,
-                                 'swf',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'swf')
         submenu.append_item(sub_menuitem_swf)
         #
         sub_menuitem_txt = FileManager.MenuItem(
@@ -439,9 +444,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_txt.connect('activate',
                                  self.convert_to_extension,
-                                 'txt',
                                  sel_items,
-                                 window)
+                                 window,
+                                 'txt')
         submenu.append_item(sub_menuitem_txt)
         #
         sub_menuitem_10 = FileManager.MenuItem(
@@ -451,9 +456,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_10.connect('activate',
                                 self.convert_to_extension,
-                                'xls',
                                 sel_items,
-                                window)
+                                window,
+                                'xls')
         submenu.append_item(sub_menuitem_10)
         #
         sub_menuitem_11 = FileManager.MenuItem(
@@ -463,9 +468,9 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             icon='Gtk-find-and-replace')
         sub_menuitem_11.connect('activate',
                                 self.convert_to_extension,
-                                'xlsx',
                                 sel_items,
-                                window)
+                                window,
+                                'xlsx')
         submenu.append_item(sub_menuitem_11)
         #
         sub_menuitem_98 = FileManager.MenuItem(
@@ -484,30 +489,36 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
 
     def about(self, widget, window):
         ad = Gtk.AboutDialog(parent=window)
-        ad.set_name(APPNAME)
+        ad.set_name(APP)
         ad.set_version(VERSION)
-        ad.set_copyright('Copyrignt (c) 2016 - 2018\nLorenzo Carbonell')
-        ad.set_comments(APPNAME)
+        ad.set_copyright('Copyrignt (c) 2016\nLorenzo Carbonell')
+        ad.set_comments(APP)
         ad.set_license('''
-This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-You should have received a copy of the GNU General Public License along with
-this program. If not, see <http://www.gnu.org/licenses/>.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ''')
-        ad.set_website('http://www.atareao.es')
-        ad.set_website_label('http://www.atareao.es')
+        ad.set_website('https://www.atareao.es')
+        ad.set_website_label('atareao.es')
         ad.set_authors([
-            'Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>'])
+            'Lorenzo Carbonell <a.k.a. atareao>'])
         ad.set_documenters([
-            'Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>'])
+            'Lorenzo Carbonell <a.k.a. atareao>'])
         ad.set_icon_name(ICON)
-        ad.set_logo_icon_name(APPNAME)
+        ad.set_logo_icon_name(APP)
         ad.run()
         ad.destroy()
