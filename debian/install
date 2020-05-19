@@ -1,2 +1,2 @@
 src/*.py /usr/share/nautilus-python/extensions
-data/icons/* /usr/share/icons/hicolor
+data/icons/hicolor /usr/share/icons

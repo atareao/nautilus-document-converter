@@ -1,0 +1,177 @@
+# Spanish translations for nautilus-document-converter package.
+# Copyright (C) 2020 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the nautilus-document-converter package.
+# Lorenzo <lorenzo.carbonell.cerezo@gmail.com>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: nautilus-document-converter - 0.1.2-0extras20.04.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-05-17 14:12+0200\n"
+"PO-Revision-Date: 2020-05-17 14:12+0200\n"
+"Last-Translator: Lorenzo <lorenzo.carbonell.cerezo@gmail.com>\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/nautilus-document-converter.py:206
+#, python-format
+msgid "Converting: %s"
+msgstr "Convirtiendo: %s"
+
+#: src/nautilus-document-converter.py:238
+#, python-format
+msgid "Convert to %s"
+msgstr "Convertir a %s"
+
+#: src/nautilus-document-converter.py:258
+msgid "Document converter"
+msgstr "Conversor de documentos"
+
+#: src/nautilus-document-converter.py:259
+msgid "Tools to convert documents"
+msgstr "Herramienta para convertir documentos"
+
+#: src/nautilus-document-converter.py:267
+msgid "to DOC"
+msgstr "a DOC"
+
+#: src/nautilus-document-converter.py:268
+msgid "Convert to DOC"
+msgstr "Convertir a DOC"
+
+#: src/nautilus-document-converter.py:279
+msgid "to DOCX"
+msgstr "a DOCX"
+
+#: src/nautilus-document-converter.py:280
+msgid "Convert to DOCX"
+msgstr "Convertir a DOCX"
+
+#: src/nautilus-document-converter.py:291
+msgid "to HTML"
+msgstr "a HTML"
+
+#: src/nautilus-document-converter.py:292
+msgid "Convert to HTML"
+msgstr "Convertir a HTML"
+
+#: src/nautilus-document-converter.py:303
+msgid "to ODP"
+msgstr "a ODP"
+
+#: src/nautilus-document-converter.py:304
+msgid "Convert to ODP"
+msgstr "Convertir a ODP"
+
+#: src/nautilus-document-converter.py:315
+msgid "to ODS"
+msgstr "a ODS"
+
+#: src/nautilus-document-converter.py:316
+msgid "Convert to ODS"
+msgstr "Convertir a ODS"
+
+#: src/nautilus-document-converter.py:327
+msgid "to ODT"
+msgstr "a ODT"
+
+#: src/nautilus-document-converter.py:328
+msgid "Convert to ODT"
+msgstr "Convertir a ODT"
+
+#: src/nautilus-document-converter.py:339
+msgid "to JPG"
+msgstr "a JPG"
+
+#: src/nautilus-document-converter.py:340
+msgid "Convert to JPG"
+msgstr "Convertir a JPG"
+
+#: src/nautilus-document-converter.py:351
+msgid "to PDF"
+msgstr "a PDF"
+
+#: src/nautilus-document-converter.py:352
+msgid "Convert to PDF"
+msgstr "Convertir a PDF"
+
+#: src/nautilus-document-converter.py:363
+msgid "to PNG"
+msgstr "a PNG"
+
+#: src/nautilus-document-converter.py:364
+msgid "Convert to PNG"
+msgstr "Convertir a PNG"
+
+#: src/nautilus-document-converter.py:375
+msgid "to PPT"
+msgstr "a PPT"
+
+#: src/nautilus-document-converter.py:376
+msgid "Convert to PPT"
+msgstr "Convertir a PPT"
+
+#: src/nautilus-document-converter.py:387
+msgid "to PPTX"
+msgstr "a PPTX"
+
+#: src/nautilus-document-converter.py:388
+msgid "Convert to PPTX"
+msgstr "Convertir a PPTX"
+
+#: src/nautilus-document-converter.py:399
+msgid "to RTF"
+msgstr "a RTF"
+
+#: src/nautilus-document-converter.py:400
+msgid "Convert to RTF"
+msgstr "Convertir a RTF"
+
+#: src/nautilus-document-converter.py:411
+msgid "to SVG"
+msgstr "a SVG"
+
+#: src/nautilus-document-converter.py:412
+msgid "Convert to SVG"
+msgstr "Convertir a SVG"
+
+#: src/nautilus-document-converter.py:423
+msgid "to SWF"
+msgstr "a SWF"
+
+#: src/nautilus-document-converter.py:424
+msgid "Convert to SWF"
+msgstr "Convertir a SWF"
+
+#: src/nautilus-document-converter.py:435
+msgid "to TXT"
+msgstr "a TXT"
+
+#: src/nautilus-document-converter.py:436
+msgid "Convert to TXT"
+msgstr "Convertir a TXT"
+
+#: src/nautilus-document-converter.py:447
+msgid "to XLS"
+msgstr "a XLS"
+
+#: src/nautilus-document-converter.py:448
+msgid "Convert to XLS"
+msgstr "Convertir a XLS"
+
+#: src/nautilus-document-converter.py:459
+msgid "to XLSX"
+msgstr "a XLSX"
+
+#: src/nautilus-document-converter.py:460
+msgid "Convert to XLSX"
+msgstr "Convertir a XLSX"
+
+#: src/nautilus-document-converter.py:475
+#: src/nautilus-document-converter.py:476
+msgid "About"
+msgstr "Acerca de"
