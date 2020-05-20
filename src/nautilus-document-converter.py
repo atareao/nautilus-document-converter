@@ -42,7 +42,6 @@ import os
 import locale
 import gettext
 from plumbum import local
-from concurrent import futures
 
 APP = '$APP'
 ICON = '$APP'
