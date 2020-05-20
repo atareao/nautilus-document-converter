@@ -2,19 +2,20 @@ Source: nautilus-document-converter
 Section: utils
 Priority: extra
 Maintainer: Lorenzo Carbonell Cerezo <lorenzo.carbonell.cerezo@gmail.com>
-Build-Depends: debhelper (>= 9), python, python-distutils-extra, python-polib
-Standards-Version: 3.9.3
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.4
 Homepage: http://www.atareao.es
 
 Package: nautilus-document-converter
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends},
+Depends:
     python3,
     python3-gi,
     python3-plumbum,
+    python3-nautilus,
     gir1.2-gtk-3.0,
     gir1.2-nautilus-3.0,
-    python3-nautilus,
+    nanecalib,
     unoconv
 Description: An extension for Nautilus to convert document files.
  Nautilus Document Converter is an extension for Nautilus, to help you
