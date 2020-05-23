@@ -1,4 +1,4 @@
-##!/usr/bin/python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # This file is part of nautilus-document-converter
@@ -43,8 +43,8 @@ import locale
 import gettext
 from plumbum import local
 
-APP = '$APP'
-ICON = '$APP'
+APP = '$APP$'
+ICON = '$APP$'
 VERSION = '$VERSION$'
 LANGDIR = os.path.join('usr', 'share', 'locale-langpack')
 
@@ -75,8 +75,8 @@ class ConverterDIIB(DoItInBackground):
         root, ext = os.path.splitext(tail)
         file_out = os.path.join(head, root + '.' + self.extension)
         unoconv = local['unoconv']
-        unoconv['-f', 'self.extension', '-o', '"{}"'.format(file_out),
-                '"{}"'.format(file_in)]()
+        unoconv['-f', 'self.extension', '-o', '{}'.format(file_out),
+                '{}'.format(file_in)]()
 
 
 class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
@@ -340,7 +340,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
         return top_menuitem,
 
     def about(self, widget, window):
-        ad = Gtk.AboutDialog(parent=window)
+        ad = Gtk.AboutDialog(parent=window, use_header_bar=True)
         ad.set_name(APP)
         ad.set_version(VERSION)
         ad.set_copyright('Copyrignt (c) 2016\nLorenzo Carbonell')
