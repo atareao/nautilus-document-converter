@@ -38,10 +38,17 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Nautilus as FileManager
+import sys
 import os
 import locale
 import gettext
 from plumbum import local
+try:
+    sys.path.insert(1, '/usr/share/nanecalib')
+    from nanecalib import DoItInBackground
+except Exception as nanecalib_error:
+    print(nanecalib_error)
+    sys.exit(-1)
 
 APP = '$APP$'
 ICON = '$APP$'
@@ -92,8 +99,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
         """
         GObject.GObject.__init__(self)
 
-    def process(self, menu, selected, window, extension):
-        files = get_files(selected)
+    def process(self, menu, files, window, extension):
         diib = ConverterDIIB(_('Convert file'), window, files, extension)
         diib.run()
 
@@ -106,11 +112,11 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
         files = []
         for file_in in sel_items:
             if not file_in.is_directory():
-                fileName, fileExtension = os.path.splitext(
-                        file_in.get_location().get_path())
+                file_in = file_in.get_location().get_path() 
+                fileName, fileExtension = os.path.splitext(file_in)
                 if fileExtension.lower() in EXTENSIONS:
                     files.append(file_in)
-        if files:
+        if not files:
             return
         top_menuitem = FileManager.MenuItem(
             name='DocumentConverterMenuProvider::Gtk-document-converter',
@@ -139,7 +145,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to DOCX'),
             icon='Gtk-find-and-replace')
         sub_menuitem_docx.connect('activate',
-                                  self.convert_to_extension,
+                                  self.process,
                                   files,
                                   window,
                                   'docx')
@@ -151,7 +157,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to HTML'),
             icon='Gtk-find-and-replace')
         sub_menuitem_html.connect('activate',
-                                  self.convert_to_extension,
+                                  self.process,
                                   files,
                                   window,
                                   'html')
@@ -163,7 +169,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to ODP'),
             icon='Gtk-find-and-replace')
         sub_menuitem_odp.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'odp')
@@ -175,7 +181,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to ODS'),
             icon='Gtk-find-and-replace')
         sub_menuitem_ods.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'ods')
@@ -187,7 +193,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to ODT'),
             icon='Gtk-find-and-replace')
         sub_menuitem_odt.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'odt')
@@ -199,7 +205,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to JPG'),
             icon='Gtk-find-and-replace')
         sub_menuitem_jpg.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'jpg')
@@ -211,7 +217,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to PDF'),
             icon='Gtk-find-and-replace')
         sub_menuitem_pdf.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'pdf')
@@ -223,7 +229,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to PNG'),
             icon='Gtk-find-and-replace')
         sub_menuitem_png.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'png')
@@ -235,7 +241,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to PPT'),
             icon='Gtk-find-and-replace')
         sub_menuitem_ppt.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'ppt')
@@ -247,7 +253,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to PPTX'),
             icon='Gtk-find-and-replace')
         sub_menuitem_pptx.connect('activate',
-                                  self.convert_to_extension,
+                                  self.process,
                                   files,
                                   window,
                                   'pptx')
@@ -259,7 +265,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to RTF'),
             icon='Gtk-find-and-replace')
         sub_menuitem_rtf.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'rtf')
@@ -271,7 +277,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to SVG'),
             icon='Gtk-find-and-replace')
         sub_menuitem_svg.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'svg')
@@ -283,7 +289,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to SWF'),
             icon='Gtk-find-and-replace')
         sub_menuitem_swf.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'swf')
@@ -295,7 +301,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to TXT'),
             icon='Gtk-find-and-replace')
         sub_menuitem_txt.connect('activate',
-                                 self.convert_to_extension,
+                                 self.process,
                                  files,
                                  window,
                                  'txt')
@@ -307,7 +313,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to XLS'),
             icon='Gtk-find-and-replace')
         sub_menuitem_10.connect('activate',
-                                self.convert_to_extension,
+                                self.process,
                                 files,
                                 window,
                                 'xls')
@@ -319,7 +325,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             tip=_('Convert to XLSX'),
             icon='Gtk-find-and-replace')
         sub_menuitem_11.connect('activate',
-                                self.convert_to_extension,
+                                self.process,
                                 files,
                                 window,
                                 'xlsx')
