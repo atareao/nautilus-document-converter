@@ -74,7 +74,7 @@ EXTENSIONS = ['.bib', '.dbf', '.dif', '.doc', '.docx', '.dxf', '.emf', '.eps',
 
 class ConverterDIIB(DoItInBackground):
     def __init__(self, title, parent, files, extension):
-        DoItInBackground.__init__(title, parent, files, ICON)
+        DoItInBackground.__init__(self, title, parent, files, ICON)
         self.extension = extension
 
     def process_item(self, file_in):
