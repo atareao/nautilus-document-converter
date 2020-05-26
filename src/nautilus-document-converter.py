@@ -61,15 +61,15 @@ language.install()
 _ = language.gettext
 
 
-EXTENSIONS = ['.bib', '.dbf', '.dif', '.doc', '.docx', '.dxf', '.emf', '.eps',
-              '.gif', '.html', '.jpg', '.ltx', '.met', '.odg', '.odp', '.ods',
-              '.odt', '.otg', '.ott', '.pbm', '.pbm', '.pct', '.pdb', '.pdf',
-              '.pgm', '.png', '.pot', '.ppm', '.ppt', '.pptx', '.psw', '.pts',
-              '.pwp', '.pxl', '.ras', '.rtf', '.sda', '.sdc', '.sdd', '.sdw',
-              '.slk', '.stc', '.std', '.sti', '.stp', '.stw', '.svg', '.svm',
-              '.svm', '.swf', '.sxc', '.sxd', '.sxi', '.sxw', '.tiff', '.txt',
-              '.vor', '.wmf', '.xhtml', '.xls', '.xlsx', '.xlt', '.xml',
-              '.xpm']
+EXTENSIONS = ['bib', 'dbf', 'dif', 'doc', 'docx', 'dxf', 'emf', 'eps',
+              'gif', 'html', 'jpg', 'ltx', 'met', 'odg', 'odp', 'ods',
+              'odt', 'otg', 'ott', 'pbm', 'pbm', 'pct', 'pdb', 'pdf',
+              'pgm', 'png', 'pot', 'ppm', 'ppt', 'pptx', 'psw', 'pts',
+              'pwp', 'pxl', 'ras', 'rtf', 'sda', 'sdc', 'sdd', 'sdw',
+              'slk', 'stc', 'std', 'sti', 'stp', 'stw', 'svg', 'svm',
+              'svm', 'swf', 'sxc', 'sxd', 'sxi', 'sxw', 'tiff', 'txt',
+              'vor', 'wmf', 'xhtml', 'xls', 'xlsx', 'xlt', 'xml',
+              'xpm']
 
 
 class ConverterDIIB(DoItInBackground):
@@ -81,9 +81,12 @@ class ConverterDIIB(DoItInBackground):
         head, tail = os.path.split(file_in)
         root, ext = os.path.splitext(tail)
         file_out = os.path.join(head, root + '.' + self.extension)
-        unoconv = local['unoconv']
-        unoconv['-f', 'self.extension', '-o', '{}'.format(file_out),
-                '{}'.format(file_in)]()
+        try:
+            unoconv = local['unoconv']
+            unoconv['-f', self.extension, '-o', '{}'.format(file_out),
+                    '{}'.format(file_in)]()
+        except Exception as exception:
+            print(exception)
 
 
 class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
@@ -114,7 +117,7 @@ class DocumentConverterMenuProvider(GObject.GObject, FileManager.MenuProvider):
             if not file_in.is_directory():
                 file_in = file_in.get_location().get_path() 
                 fileName, fileExtension = os.path.splitext(file_in)
-                if fileExtension.lower() in EXTENSIONS:
+                if fileExtension[1:].lower() in EXTENSIONS:
                     files.append(file_in)
         if not files:
             return
